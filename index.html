@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>루아코치의 맞춤형 탄단지 계산기</title>
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+        
+        body { 
+            font-family: 'Pretendard', sans-serif; 
+            background-color: #f4f1eb; 
+            color: #333; 
+            padding: 20px; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .container { 
+            background: #ffffff; 
+            padding: 35px 30px; 
+            border-radius: 16px; 
+            box-shadow: 0 8px 20px rgba(0,0,0,0.05); 
+            max-width: 450px; 
+            width: 100%; 
+        }
+        h2 { 
+            font-size: 1.3rem; 
+            color: #2c3e50; 
+            text-align: center; 
+            margin-top: 0;
+            margin-bottom: 25px;
+            font-weight: 700;
+        }
+        .section-title {
+            font-size: 1.05rem;
+            color: #638076;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            font-weight: 700;
+            border-bottom: 2px solid #e1e8e5;
+            padding-bottom: 8px;
+        }
+        .input-group {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        .input-group label {
+            font-weight: 600; 
+            font-size: 0.95rem; 
+            color: #555;
+            width: 45%;
+        }
+        .input-group input[type="number"], .input-group select {
+            width: 50%;
+            padding: 10px; 
+            border: 1px solid #ddd; 
+            border-radius: 8px; 
+            font-size: 0.95rem;
+            transition: border-color 0.3s;
+        }
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: #638076;
+        }
+        .radio-group {
+            margin-bottom: 12px;
+            font-size: 0.95rem;
+        }
+        .radio-title {
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 8px;
+            display: block;
+        }
+        .radio-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 6px;
+            color: #444;
+        }
+        .radio-item input {
+            margin-right: 8px;
+            accent-color: #638076;
+        }
+        button { 
+            width: 100%; 
+            padding: 14px; 
+            margin-top: 25px; 
+            background-color: #638076; 
+            color: white; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-size: 1.05rem; 
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #4f665e;
+        }
+        .result { 
+            margin-top: 25px; 
+            padding: 20px; 
+            background-color: #f7f9f8; 
+            border-radius: 8px; 
+            border: 1px solid #e1e8e5;
+        }
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+            color: #444;
+        }
+        .result-row.highlight {
+            font-weight: 800;
+            font-size: 1.1rem;
+            color: #2c3e50;
+            margin-top: 15px;
+            border-top: 1px dashed #ccc;
+            padding-top: 15px;
+        }
+        .macro-box {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            gap: 10px;
+        }
+        .macro-item {
+            background: #fff;
+            flex: 1;
+            text-align: center;
+            padding: 15px 10px;
+            border-radius: 8px;
+            border: 1px solid #e1e8e5;
+        }
+        .macro-item span {
+            display: block;
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        .macro-item b {
+            font-size: 1.2rem;
+            color: #638076;
+        }
+        .estimation-box {
+            margin-top: 15px;
+            padding: 12px;
+            background-color: #eaf1ee;
+            border-radius: 8px;
+            color: #3b534a;
+            font-size: 0.95rem;
+            font-weight: 600;
+            text-align: center;
+            line-height: 1.4;
+        }
+        .note { 
+            font-size: 0.8rem; 
+            color: #888; 
+            margin-top: 20px; 
+            line-height: 1.5; 
+            background-color: #fafafa;
+            padding: 15px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>📊 루아코치의 맞춤형 탄단지 & 목표 달성 계산기</h2>
+        
+        <div class="section-title">1. 기본 정보</div>
+        <div class="radio-group">
+            <span class="radio-title">성별 (지방 섭취량 계산 기준)</span>
+            <label class="radio-item"><input type="radio" name="gender" value="female" checked> 여성 (체중 1kg당 지방 0.9g)</label>
+            <label class="radio-item"><input type="radio" name="gender" value="male"> 남성 (체중 1kg당 지방 0.7g)</label>
+        </div>
+        
+        <div class="input-group">
+            <label for="age">만 나이 (세)</label>
+            <input type="number" id="age" value="40" placeholder="예: 40">
+        </div>
+        <div class="input-group">
+            <label for="height">신장 (cm)</label>
+            <input type="number" id="height" value="171" placeholder="예: 171">
+        </div>
+        <div class="input-group">
+            <label for="weight">현재 체중 (kg)</label>
+            <input type="number" id="weight" value="55" step="0.1" placeholder="예: 55">
+        </div>
+
+        <div class="section-title">2. 활동 및 목표 설정</div>
+        <div class="input-group" style="display:block;">
+            <label for="activity" style="width:100%; margin-bottom:8px; display:block;">평소 활동량 (활동대사량 기준)</label>
+            <select id="activity" style="width:100%;">
+                <option value="1.2">거의 운동하지 않음 (사무직 등)</option>
+                <option value="1.375">가벼운 활동 (주 1~3회 운동)</option>
+                <option value="1.55" selected>보통 활동 (주 3~5회 운동)</option>
+                <option value="1.725">적극적인 활동 (주 6~7회 강도 높은 운동)</option>
+                <option value="1.9">매우 적극적인 활동 (전문 운동선수, 육체노동)</option>
+            </select>
+        </div>
+        
+        <div class="radio-group" style="margin-top: 15px;">
+            <span class="radio-title">단백질 섭취 기준</span>
+            <label class="radio-item"><input type="radio" name="protein" value="1.0"> 운동 안함 (체중 1kg당 1.0g)</label>
+            <label class="radio-item"><input type="radio" name="protein" value="1.5"> 주 3회 근력운동 (체중 1kg당 1.5g)</label>
+            <label class="radio-item"><input type="radio" name="protein" value="2.0" checked> 주 4회 이상 고강도/웨이트 (체중 1kg당 2.0g)</label>
+        </div>
+
+        <div class="input-group" style="margin-top: 15px;">
+            <label for="goal_weight">목표 체중 (kg)</label>
+            <input type="number" id="goal_weight" value="50" step="0.1" placeholder="예: 50">
+        </div>
+        <div class="input-group">
+            <label for="goal_loss">한 달 감량 목표 (kg)</label>
+            <input type="number" id="goal_loss" value="1.0" step="0.1" placeholder="예: 1.0">
+        </div>
+
+        <button onclick="calculateMacros()">결과 확인하기</button>
+
+        <div class="result" id="result-box" style="display:none;">
+            <div class="result-row">
+                <span>기초대사량 (BMR)</span>
+                <strong id="res-bmr"></strong>
+            </div>
+            <div class="result-row">
+                <span>활동대사량 (TDEE)</span>
+                <strong id="res-tdee"></strong>
+            </div>
+            <div class="result-row highlight">
+                <span>하루 목표 칼로리 섭취량</span>
+                <strong id="res-target-cal" style="color: #638076;"></strong>
+            </div>
+            
+            <div class="macro-box">
+                <div class="macro-item">
+                    <span>탄수화물</span>
+                    <b id="res-carb"></b>g
+                </div>
+                <div class="macro-item">
+                    <span>단백질</span>
+                    <b id="res-protein"></b>g
+                </div>
+                <div class="macro-item">
+                    <span>지방</span>
+                    <b id="res-fat"></b>g
+                </div>
+            </div>
+
+            <div class="estimation-box" id="res-estimation">
+                <!-- 예상 기간 텍스트가 여기에 들어갑니다 -->
+            </div>
+        </div>
+
+        <div class="note">
+            <b>* 계산 근거</b><br>
+            - 기초대사량: Mifflin-St Jeor 공식 적용<br>
+            - 감량 목표: 체지방 1kg 감량에 약 7,700kcal가 필요하다는 기준하에 일일 결손량 산출<br>
+            - 탄수화물: 목표 칼로리에서 단백질과 지방 열량을 제외한 나머지 잔여 칼로리로 자동 배정
+        </div>
+    </div>
+
+    <script>
+        function calculateMacros() {
+            const age = parseFloat(document.getElementById('age').value);
+            const height = parseFloat(document.getElementById('height').value);
+            const weight = parseFloat(document.getElementById('weight').value);
+            const goalWeight = parseFloat(document.getElementById('goal_weight').value);
+            const activity = parseFloat(document.getElementById('activity').value);
+            const goalLoss = parseFloat(document.getElementById('goal_loss').value) || 0;
+            
+            const gender = document.querySelector('input[name="gender"]:checked').value;
+            const proteinMultiplier = parseFloat(document.querySelector('input[name="protein"]:checked').value);
+
+            if(isNaN(age) || isNaN(height) || isNaN(weight) || isNaN(goalWeight)) {
+                alert("나이, 신장, 현재 체중, 목표 체중을 모두 정확히 입력해주세요.");
+                return;
+            }
+
+            let bmr = (10 * weight) + (6.25 * height) - (5 * age);
+            if(gender === 'male') {
+                bmr += 5;
+            } else {
+                bmr -= 161;
+            }
+
+            const tdee = bmr * activity;
+            const dailyDeficit = (goalLoss * 7700) / 30;
+            const targetCalories = tdee - dailyDeficit;
+
+            if(targetCalories < (bmr * 0.8)) {
+                alert("주의: 감량 페이스가 너무 빨라 섭취 권장량이 기초대사량보다 지나치게 낮아집니다. 근손실 예방을 위해 한 달 감량 목표를 조금 낮추는 것을 권장합니다.");
+            }
+
+            const proteinGrams = weight * proteinMultiplier;
+            const proteinKcal = proteinGrams * 4;
+
+            const fatMultiplier = (gender === 'female') ? 0.9 : 0.7;
+            const fatGrams = weight * fatMultiplier;
+            const fatKcal = fatGrams * 9;
+
+            let remainingKcal = targetCalories - proteinKcal - fatKcal;
+            let carbGrams = 0;
+            if(remainingKcal > 0) {
+                carbGrams = remainingKcal / 4;
+            }
+
+            let estimationText = "";
+            if (weight > goalWeight && goalLoss > 0) {
+                const totalLossNeeded = weight - goalWeight;
+                const monthsNeeded = totalLossNeeded / goalLoss;
+                estimationText = `💡 현재 식단을 유지하시면 목표 체중(${goalWeight}kg)까지<br>약 <b>${monthsNeeded.toFixed(1)}개월</b>이 소요됩니다.`;
+            } else if (weight <= goalWeight) {
+                estimationText = "💡 목표 체중이 현재 체중과 같거나 높습니다.<br>체중 유지 또는 증량을 위한 식단입니다.";
+            } else {
+                estimationText = "💡 한 달 감량 목표가 0kg으로 설정되어 있어<br>현재 체중을 유지하게 됩니다.";
+            }
+
+            document.getElementById('res-bmr').innerText = Math.round(bmr) + " kcal";
+            document.getElementById('res-tdee').innerText = Math.round(tdee) + " kcal";
+            document.getElementById('res-target-cal').innerText = Math.round(targetCalories) + " kcal";
+            
+            document.getElementById('res-carb').innerText = Math.round(carbGrams);
+            document.getElementById('res-protein').innerText = Math.round(proteinGrams);
+            document.getElementById('res-fat').innerText = Math.round(fatGrams);
+            
+            document.getElementById('res-estimation').innerHTML = estimationText;
+
+            document.getElementById('result-box').style.display = "block";
+        }
+    </script>
+</body>
+</html>
