@@ -23,7 +23,7 @@ for d in "$SRC"/skills/ig-*; do
   fi
 done
 
-for f in voice.md plan.md log.md swipe.md series.md; do
+for f in voice.md plan.md log.md swipe.md series.md series_scripts.md; do
   dst="$HOME/.claude/instagram/$f"
   if [ -e "$dst" ] && ! cmp -s "$HERE/$f" "$dst"; then
     cp "$dst" "$dst.bak-$(date +%Y%m%d%H%M%S)"
